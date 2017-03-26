@@ -1310,9 +1310,16 @@ static NSDictionary* org_apache_cordova_contacts_defaultFields = nil;
 {
     NSMutableArray* photos = nil;
 
-    if (ABPersonHasImageData(self.record)) {
-        CFIndex photoId = ABRecordGetRecordID(self.record);
-        CFDataRef photoData = ABPersonCopyImageData(self.record);
+    // http://stackoverflow.com/questions/10160750/ios-cant-get-persons-image
+    // can't get image from a ABRecordRef copy
+    ABRecordID contactID = ABRecordGetRecordID(self.record);
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    
+    ABRecordRef origContactRef = ABAddressBookGetPersonWithRecordID(addressBook, contactID);
+    
+    if (ABPersonHasImageData(origContactRef)) {
+        CFIndex photoId = ABRecordGetRecordID(origContactRef);
+        CFDataRef photoData = ABPersonCopyImageData(origContactRef);
         if (!photoData) {
             return nil;
         }
